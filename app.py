@@ -2,14 +2,15 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import pickle
+from tensorflow.keras.models import load_model
 
 # load model & objects
-model = pickle.load(open("model.pkl", "rb"))
+model = load_model('model.h5')
 
-with open("scaler.pkl", "rb") as f:
+with open('scaler.pkl','rb') as f:
     scaler = pickle.load(f)
 
-with open("columns.pkl", "rb") as f:
+with open('columns.pkl','rb') as f:
     columns = pickle.load(f)
 
 st.set_page_config(page_title="Churn Prediction", layout="centered")
@@ -40,11 +41,22 @@ input_dict = {
     "HasCrCard": has_crcard,
     "IsActiveMember": is_active,
     "EstimatedSalary": salary,
-    "Geography_Germany": 1 if geography == "Germany" else 0,
-    "Geography_Spain": 1 if geography == "Spain" else 0,
-    "Gender_Male": 1 if gender == "Male" else 0,
+    "Geography_France": 0,
+    "Geography_Germany": 0,
+    "Geography_Spain": 0,
+    "Gender_Male": 0
 }
 
+# encoding
+if geography == "Germany":
+    input_dict["Geography_Germany"] = 1
+elif geography == "Spain":
+    input_dict["Geography_Spain"] = 1
+
+if gender == "Male":
+    input_dict["Gender_Male"] = 1
+
+# dataframe
 input_df = pd.DataFrame([input_dict])
 
 # align columns
@@ -55,8 +67,9 @@ input_scaled = scaler.transform(input_df)
 
 # prediction
 if st.button("Predict Churn"):
-    pred = model.predict(input_scaled)[0]
-    result = "❌ Customer will EXIT" if pred == 1 else "✅ Customer will NOT exit"
+    prob = model.predict(input_scaled)[0][0]
+    result = "❌ Customer will EXIT" if prob > 0.5 else "✅ Customer will NOT exit"
 
     st.subheader("Prediction Result")
     st.write(result)
+    st.write(f"Churn Probability: **{prob:.2f}**")
