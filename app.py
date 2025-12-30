@@ -5,7 +5,7 @@ import pickle
 from tensorflow.keras.models import load_model
 
 # load model & objects
-model = load_model('model.keras',compile=False)
+model = load_model('model.keras')
 
 with open('scaler.pkl','rb') as f:
     scaler = pickle.load(f)
@@ -73,5 +73,6 @@ if st.button("Predict Churn"):
     st.subheader("Prediction Result")
     st.write(result)
     st.write(f"Churn Probability: **{prob:.2f}**")
+
 
 
